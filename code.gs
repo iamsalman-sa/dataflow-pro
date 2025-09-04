@@ -526,6 +526,16 @@ function executeDataTransfer(transferParams) {
 }
 
 /**
+ * Serves the HTML file when the web app is accessed
+ * This function is called when someone visits your web app URL
+ */
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('Spreadsheet Data Transfer Tool')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/**
  * Web app entry point for handling HTTP requests
  * This function should be deployed as a web app with execute permissions set to "Anyone"
  */
