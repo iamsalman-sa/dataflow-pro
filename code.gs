@@ -5,12 +5,20 @@
 
 // Configuration
 const REQUIRED_HEADERS = [
-  'ORDER ID',
-  'TRACKING ID', 
   'DATE',
-  'CUSTOMER',
-  'AMOUNT',
-  'STATUS'
+  'ORDER ID',
+  'TRACKING ID',
+  'CUSTOMER NAME',
+  'PHONE',
+  'CITY',
+  'COD',
+  'REMARKS ON STATUS',
+  'AGENT NAME',
+  'STATUS',
+  'EXPORT',
+  'DELIVERY TYPE',
+  'RETURN REASON',
+  'REMARKS IF RETURNED'
 ];
 
 const CHUNK_SIZE = 100; // Process data in chunks of 100 rows
