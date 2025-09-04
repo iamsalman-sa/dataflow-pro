@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spreadsheet Data Transfer Tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0a2a 0%, #1e293b 100%);
+      min-height: 100vh;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #9ca3af;
+      font-size: 1.1rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      font-size: 16px;
+      color: white;
+    }
+
+    .source-icon {
+      background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+    }
+
+    .dest-icon {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .status-icon {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .dropdown-trigger {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: white;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .dropdown-trigger:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .date-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-trigger {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dropdown-trigger:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .dropdown-icon {
+      transition: transform 0.2s ease;
+    }
+
+    .dropdown-icon.rotated {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      max-height: 250px;
+      overflow: hidden;
+      z-index: 50;
+      display: none;
+    }
+
+    .dropdown-menu.show {
+      display: block;
+    }
+
+    .dropdown-search {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px 8px 36px;
+      color: white;
+      font-size: 0.875rem;
+    }
+
+    .search-container {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .dropdown-options {
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .dropdown-option {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-size: 0.875rem;
+    }
+
+    .dropdown-option:hover {
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .dropdown-option.no-results {
+      color: #9ca3af;
+      text-align: center;
+      cursor: default;
+    }
+
+    .dropdown-option.no-results:hover {
+      background: transparent;
+    }
+
+    .button {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.875rem;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+      color: white;
+    }
+
+    .button-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+    }
+
+    .button-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+
+    .button-success:hover:not(:disabled) {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .button-outline {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .button-outline:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .button-full {
+      width: 100%;
+    }
+
+    .button-link {
+      background: none;
+      border: none;
+      color: #3b82f6;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.875rem;
+      margin-top: 8px;
+      padding: 4px 0;
+    }
+
+    .button-link:hover {
+      color: #2563eb;
+    }
+
+    .button-link:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .switch.active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+    }
+
+    .switch-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    .switch.active .switch-thumb {
+      transform: translateX(20px);
+    }
+
+    .switch-label {
+      font-size: 0.875rem;
+      transition: color 0.3s ease;
+    }
+
+    .switch-label.active {
+      color: white;
+    }
+
+    .switch-label.inactive {
+      color: #9ca3af;
+    }
+
+    .status-section {
+      margin-bottom: 40px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-value.blue { color: #3b82f6; }
+    .stat-value.green { color: #10b981; }
+    .stat-value.amber { color: #f59e0b; }
+
+    .stat-label {
+      color: #9ca3af;
+      font-size: 0.875rem;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: hidden;
+      animation: modalEnter 0.3s ease-out;
+    }
+
+    @keyframes modalEnter {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .modal-header {
+      padding: 24px 24px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .modal-subtitle {
+      color: #9ca3af;
+      font-size: 0.875rem;
+    }
+
+    .modal-content {
+      padding: 0 24px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 24px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 24px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 12px;
+      font-weight: 500;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      white-space: nowrap;
+    }
+
+    .data-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid white;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-container {
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .progress-spinner {
+      width: 64px;
+      height: 64px;
+      border: 4px solid #8b5cf6;
+      border-top: 4px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+      transition: width 0.3s ease;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      max-width: 400px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-left: 4px solid;
+      border-radius: 8px;
+      padding: 16px;
+      z-index: 1000;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .notification.success { border-left-color: #10b981; }
+    .notification.error { border-left-color: #ef4444; }
+    .notification.warning { border-left-color: #f59e0b; }
+    .notification.info { border-left-color: #3b82f6; }
+
+    .notification-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .notification-title {
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .notification-close {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 12px;
+    }
+
+    .notification-close:hover {
+      color: white;
+    }
+
+    .notification-message {
+      color: #9ca3af;
+      font-size: 0.75rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .warning-box {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+    }
+
+    .warning-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .warning-icon {
+      color: #f59e0b;
+      margin-top: 2px;
+      font-size: 16px;
+    }
+
+    .warning-text {
+      color: #fbbf24;
+      font-size: 0.875rem;
+    }
+
+    .header-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .header-tag {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .header-tag.expected {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+
+    .header-tag.missing {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    .header-tag.extra {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Spreadsheet Data Transfer Tool</h1>
+      <p>Efficiently transfer and manage your spreadsheet data</p>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+      <!-- Source Data Section -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-icon source-icon">
+            <i class="fas fa-folder"></i>
+          </div>
+          <h2 class="card-title">Source Data</h2>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Source Spreadsheet</label>
+          <div class="dropdown" id="sourceSpreadsheetDropdown">
+            <button class="dropdown-trigger" id="sourceSpreadsheetTrigger">
+              <span>Select spreadsheet...</span>
+              <i class="fas fa-chevron-down dropdown-icon"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="dropdown-search">
+                <div class="search-container">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" class="search-input" placeholder="Search...">
+                </div>
+              </div>
+              <div class="dropdown-options" id="sourceSpreadsheetOptions">
+                <!-- Options will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Source Sheet</label>
+          <div class="dropdown" id="sourceSheetDropdown">
+            <button class="dropdown-trigger" id="sourceSheetTrigger" disabled>
+              <span>Select sheet...</span>
+              <i class="fas fa-chevron-down dropdown-icon"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="dropdown-search">
+                <div class="search-container">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" class="search-input" placeholder="Search...">
+                </div>
+              </div>
+              <div class="dropdown-options" id="sourceSheetOptions">
+                <!-- Options will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Date Range</label>
+          <div class="date-grid">
+            <input type="date" id="fromDate" class="form-input">
+            <input type="date" id="toDate" class="form-input">
+          </div>
+        </div>
+
+        <button class="button button-primary button-full" id="loadPreviewBtn" disabled>
+          <i class="fas fa-eye"></i>
+          Load & Preview
+        </button>
+      </div>
+
+      <!-- Destination Section -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-icon dest-icon">
+            <i class="fas fa-download"></i>
+          </div>
+          <h2 class="card-title">Destination</h2>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Destination Spreadsheet</label>
+          <div class="dropdown" id="destSpreadsheetDropdown">
+            <button class="dropdown-trigger" id="destSpreadsheetTrigger">
+              <span>Select spreadsheet...</span>
+              <i class="fas fa-chevron-down dropdown-icon"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="dropdown-search">
+                <div class="search-container">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" class="search-input" placeholder="Search...">
+                </div>
+              </div>
+              <div class="dropdown-options" id="destSpreadsheetOptions">
+                <!-- Options will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+          <button class="button-link" id="createSpreadsheetBtn">
+            <i class="fas fa-plus"></i>
+            Create New Spreadsheet
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Destination Sheet</label>
+          <div class="dropdown" id="destSheetDropdown">
+            <button class="dropdown-trigger" id="destSheetTrigger" disabled>
+              <span>Select sheet...</span>
+              <i class="fas fa-chevron-down dropdown-icon"></i>
+            </button>
+            <div class="dropdown-menu">
+              <div class="dropdown-search">
+                <div class="search-container">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" class="search-input" placeholder="Search...">
+                </div>
+              </div>
+              <div class="dropdown-options" id="destSheetOptions">
+                <!-- Options will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+          <button class="button-link" id="createSheetBtn" disabled>
+            <i class="fas fa-plus"></i>
+            Create New Sheet
+          </button>
+        </div>
+
+        <div class="toggle-container">
+          <label class="form-label">Transfer Mode</label>
+          <div class="toggle-switch">
+            <span class="switch-label active" id="copyLabel">Copy</span>
+            <div class="switch" id="modeSwitch">
+              <div class="switch-thumb"></div>
+            </div>
+            <span class="switch-label inactive" id="moveLabel">Move</span>
+          </div>
+        </div>
+
+        <button class="button button-success button-full" id="executeTransferBtn" disabled>
+          <i class="fas fa-bolt"></i>
+          Execute Transfer
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Section -->
+    <div class="glass-card status-section">
+      <div class="card-header">
+        <div class="card-icon status-icon">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h2 class="card-title">Transfer Status</h2>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value blue" id="sourceRowsCount">0</div>
+          <div class="stat-label">Source Rows</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-value green" id="transferredRowsCount">0</div>
+          <div class="stat-label">Transferred</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-value amber" id="duplicatesCount">0</div>
+          <div class="stat-label">Duplicates</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Preview Modal -->
+  <div class="modal-overlay hidden" id="previewModal">
+    <div class="modal" style="width: 90%; max-width: 1000px;">
+      <div class="modal-header">
+        <div class="modal-title">Data Preview</div>
+        <div class="modal-subtitle" id="previewSubtitle">0 rows found for selected date range</div>
+      </div>
+      <div class="modal-content">
+        <div class="table-container">
+          <table class="data-table" id="previewTable">
+            <!-- Table content will be populated by JavaScript -->
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="previewCancelBtn">Cancel</button>
+        <button class="button button-primary" id="previewConfirmBtn">Use This Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Spreadsheet Modal -->
+  <div class="modal-overlay hidden" id="createSpreadsheetModal">
+    <div class="modal" style="width: 400px;">
+      <div class="modal-header">
+        <div class="modal-title">Create New Spreadsheet</div>
+      </div>
+      <div class="modal-content">
+        <div class="form-group">
+          <label class="form-label">Spreadsheet Name</label>
+          <input type="text" class="form-input" id="spreadsheetNameInput" placeholder="Enter spreadsheet name...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Initial Sheet Name</label>
+          <input type="text" class="form-input" id="initialSheetNameInput" placeholder="Enter sheet name...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="createSpreadsheetCancelBtn">Cancel</button>
+        <button class="button button-primary" id="createSpreadsheetConfirmBtn">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Sheet Modal -->
+  <div class="modal-overlay hidden" id="createSheetModal">
+    <div class="modal" style="width: 400px;">
+      <div class="modal-header">
+        <div class="modal-title">Create New Sheet</div>
+      </div>
+      <div class="modal-content">
+        <div class="form-group">
+          <label class="form-label">Sheet Name</label>
+          <input type="text" class="form-input" id="sheetNameInput" placeholder="Enter sheet name...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="createSheetCancelBtn">Cancel</button>
+        <button class="button button-primary" id="createSheetConfirmBtn">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Validation Modal -->
+  <div class="modal-overlay hidden" id="headerValidationModal">
+    <div class="modal" style="width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-exclamation-triangle warning-icon" style="margin-right: 8px;"></i>
+          Header Validation
+        </div>
+        <div class="modal-subtitle">Header mismatches detected between source and destination</div>
+      </div>
+      <div class="modal-content" id="headerValidationContent">
+        <!-- Content will be populated by JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="headerValidationCancelBtn">Cancel</button>
+        <button class="button button-primary" id="fixHeadersBtn">Fix Headers</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialog -->
+  <div class="modal-overlay hidden" id="confirmationModal">
+    <div class="modal" style="width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">Confirm Transfer</div>
+      </div>
+      <div class="modal-content">
+        <p id="confirmationText">Are you sure you want to proceed with this data transfer?</p>
+        <div class="warning-box hidden" id="moveWarning">
+          <div class="warning-content">
+            <i class="fas fa-exclamation-triangle warning-icon"></i>
+            <div class="warning-text">
+              <strong>Note:</strong> Since Move mode is selected, data will be deleted from the source after transfer.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="confirmationCancelBtn">Cancel</button>
+        <button class="button button-success" id="confirmationConfirmBtn">Confirm Transfer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transfer Progress Modal -->
+  <div class="modal-overlay hidden" id="progressModal">
+    <div class="modal" style="width: 400px;">
+      <div class="modal-header">
+        <div class="modal-title">Transfer in Progress</div>
+      </div>
+      <div class="modal-content">
+        <div class="progress-container">
+          <div class="progress-spinner"></div>
+          <div class="modal-title" id="progressMessage">Processing data...</div>
+          <div class="modal-subtitle" id="progressDetails">Preparing transfer...</div>
+          
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+          
+          <div style="margin-top: 16px; font-size: 0.875rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Processed:</span>
+              <span id="progressProcessed">0 / 0 rows</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Duplicates found:</span>
+              <span id="progressDuplicates">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class SpreadsheetTransferApp {
+      constructor() {
+        this.state = {
+          spreadsheets: [],
+          sourceSpreadsheet: null,
+          sourceSheet: null,
+          sourceSheets: [],
+          destSpreadsheet: null,
+          destSheet: null,
+          destSheets: [],
+          previewData: null,
+          transferMode: 'copy',
+          isTransferring: false
+        };
+
+        this.init();
+      }
+
+      async init() {
+        this.setupEventListeners();
+        await this.loadSpreadsheets();
+        this.updateUI();
+      }
+
+      setupEventListeners() {
+        // Dropdown handlers
+        this.setupDropdown('sourceSpreadsheet', (item) => this.selectSourceSpreadsheet(item));
+        this.setupDropdown('sourceSheet', (item) => this.selectSourceSheet(item));
+        this.setupDropdown('destSpreadsheet', (item) => this.selectDestSpreadsheet(item));
+        this.setupDropdown('destSheet', (item) => this.selectDestSheet(item));
+
+        // Button handlers
+        document.getElementById('loadPreviewBtn').addEventListener('click', () => this.loadPreview());
+        document.getElementById('executeTransferBtn').addEventListener('click', () => this.executeTransfer());
+        document.getElementById('createSpreadsheetBtn').addEventListener('click', () => this.showCreateSpreadsheetModal());
+        document.getElementById('createSheetBtn').addEventListener('click', () => this.showCreateSheetModal());
+
+        // Modal handlers
+        document.getElementById('previewCancelBtn').addEventListener('click', () => this.hideModal('previewModal'));
+        document.getElementById('previewConfirmBtn').addEventListener('click', () => this.confirmPreview());
+        document.getElementById('createSpreadsheetCancelBtn').addEventListener('click', () => this.hideModal('createSpreadsheetModal'));
+        document.getElementById('createSpreadsheetConfirmBtn').addEventListener('click', () => this.createSpreadsheet());
+        document.getElementById('createSheetCancelBtn').addEventListener('click', () => this.hideModal('createSheetModal'));
+        document.getElementById('createSheetConfirmBtn').addEventListener('click', () => this.createSheet());
+        document.getElementById('headerValidationCancelBtn').addEventListener('click', () => this.hideModal('headerValidationModal'));
+        document.getElementById('fixHeadersBtn').addEventListener('click', () => this.fixHeaders());
+        document.getElementById('confirmationCancelBtn').addEventListener('click', () => this.hideModal('confirmationModal'));
+        document.getElementById('confirmationConfirmBtn').addEventListener('click', () => this.confirmTransfer());
+
+        // Mode switch
+        document.getElementById('modeSwitch').addEventListener('click', () => this.toggleTransferMode());
+
+        // Date inputs
+        document.getElementById('fromDate').addEventListener('change', () => this.updateUI());
+        document.getElementById('toDate').addEventListener('change', () => this.updateUI());
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+          overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+              this.hideModal(overlay.id);
+            }
+          });
+        });
+      }
+
+      setupDropdown(prefix, onSelect) {
+        const trigger = document.getElementById(`${prefix}Trigger`);
+        const dropdown = document.getElementById(`${prefix}Dropdown`);
+        const menu = dropdown.querySelector('.dropdown-menu');
+        const searchInput = menu.querySelector('.search-input');
+        const options = document.getElementById(`${prefix}Options`);
+
+        trigger.addEventListener('click', () => {
+          if (trigger.disabled) return;
+          
+          const isOpen = menu.classList.contains('show');
+          this.closeAllDropdowns();
+          
+          if (!isOpen) {
+            menu.classList.add('show');
+            trigger.querySelector('.dropdown-icon').classList.add('rotated');
+            searchInput.focus();
+          }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+          this.filterDropdownOptions(prefix, e.target.value);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target)) {
+            menu.classList.remove('show');
+            trigger.querySelector('.dropdown-icon').classList.remove('rotated');
+            searchInput.value = '';
+            this.filterDropdownOptions(prefix, '');
+          }
+        });
+      }
+
+      closeAllDropdowns() {
+        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+          menu.classList.remove('show');
+        });
+        document.querySelectorAll('.dropdown-icon.rotated').forEach(icon => {
+          icon.classList.remove('rotated');
+        });
+      }
+
+      filterDropdownOptions(prefix, searchTerm) {
+        const options = document.getElementById(`${prefix}Options`);
+        const items = options.querySelectorAll('.dropdown-option');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          const matches = text.includes(searchTerm.toLowerCase());
+          item.style.display = matches ? 'block' : 'none';
+          if (matches) visibleCount++;
+        });
+
+        // Show "no results" message if needed
+        let noResults = options.querySelector('.dropdown-option.no-results');
+        if (visibleCount === 0 && searchTerm) {
+          if (!noResults) {
+            noResults = document.createElement('div');
+            noResults.className = 'dropdown-option no-results';
+            noResults.textContent = 'No options found';
+            options.appendChild(noResults);
+          }
+          noResults.style.display = 'block';
+        } else if (noResults) {
+          noResults.style.display = 'none';
+        }
+      }
+
+      async loadSpreadsheets() {
+        try {
+          this.showLoading('sourceSpreadsheetTrigger');
+          this.showLoading('destSpreadsheetTrigger');
+
+          const response = await this.callGoogleAppsScript('getSpreadsheets');
+          this.state.spreadsheets = response.data;
+
+          this.populateDropdown('sourceSpreadsheet', this.state.spreadsheets);
+          this.populateDropdown('destSpreadsheet', this.state.spreadsheets);
+
+        } catch (error) {
+          this.showNotification('error', 'Failed to load spreadsheets', error.message);
+        } finally {
+          this.hideLoading('sourceSpreadsheetTrigger');
+          this.hideLoading('destSpreadsheetTrigger');
+        }
+      }
+
+      populateDropdown(prefix, items) {
+        const options = document.getElementById(`${prefix}Options`);
+        options.innerHTML = '';
+
+        items.forEach(item => {
+          const option = document.createElement('div');
+          option.className = 'dropdown-option';
+          option.textContent = item.name;
+          option.addEventListener('click', () => {
+            if (prefix === 'sourceSpreadsheet') this.selectSourceSpreadsheet(item);
+            else if (prefix === 'sourceSheet') this.selectSourceSheet(item);
+            else if (prefix === 'destSpreadsheet') this.selectDestSpreadsheet(item);
+            else if (prefix === 'destSheet') this.selectDestSheet(item);
+            
+            this.closeAllDropdowns();
+          });
+          options.appendChild(option);
+        });
+      }
+
+      async selectSourceSpreadsheet(spreadsheet) {
+        this.state.sourceSpreadsheet = spreadsheet;
+        this.state.sourceSheet = null;
+        document.getElementById('sourceSpreadsheetTrigger').querySelector('span').textContent = spreadsheet.name;
+        
+        await this.loadSourceSheets();
+        this.updateUI();
+      }
+
+      async selectDestSpreadsheet(spreadsheet) {
+        this.state.destSpreadsheet = spreadsheet;
+        this.state.destSheet = null;
+        document.getElementById('destSpreadsheetTrigger').querySelector('span').textContent = spreadsheet.name;
+        
+        await this.loadDestSheets();
+        this.updateUI();
+      }
+
+      selectSourceSheet(sheet) {
+        this.state.sourceSheet = sheet;
+        document.getElementById('sourceSheetTrigger').querySelector('span').textContent = sheet.name;
+        this.updateUI();
+      }
+
+      selectDestSheet(sheet) {
+        this.state.destSheet = sheet;
+        document.getElementById('destSheetTrigger').querySelector('span').textContent = sheet.name;
+        this.updateUI();
+      }
+
+      async loadSourceSheets() {
+        if (!this.state.sourceSpreadsheet) return;
+
+        try {
+          this.showLoading('sourceSheetTrigger');
+          const response = await this.callGoogleAppsScript('getSheets', {
+            ssId: this.state.sourceSpreadsheet.id
+          });
+          this.state.sourceSheets = response.data;
+          this.populateDropdown('sourceSheet', this.state.sourceSheets);
+          
+          const trigger = document.getElementById('sourceSheetTrigger');
+          trigger.disabled = false;
+          trigger.querySelector('span').textContent = 'Select sheet...';
+
+        } catch (error) {
+          this.showNotification('error', 'Failed to load sheets', error.message);
+        } finally {
+          this.hideLoading('sourceSheetTrigger');
+        }
+      }
+
+      async loadDestSheets() {
+        if (!this.state.destSpreadsheet) return;
+
+        try {
+          this.showLoading('destSheetTrigger');
+          const response = await this.callGoogleAppsScript('getSheets', {
+            ssId: this.state.destSpreadsheet.id
+          });
+          this.state.destSheets = response.data;
+          this.populateDropdown('destSheet', this.state.destSheets);
+          
+          const trigger = document.getElementById('destSheetTrigger');
+          trigger.disabled = false;
+          trigger.querySelector('span').textContent = 'Select sheet...';
+
+        } catch (error) {
+          this.showNotification('error', 'Failed to load sheets', error.message);
+        } finally {
+          this.hideLoading('destSheetTrigger');
+        }
+      }
+
+      async loadPreview() {
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+
+        if (!this.state.sourceSpreadsheet || !this.state.sourceSheet || !fromDate || !toDate) {
+          this.showNotification('error', 'Missing Information', 'Please select spreadsheet, sheet, and date range.');
+          return;
+        }
+
+        try {
+          this.showLoading('loadPreviewBtn');
+          
+          const response = await this.callGoogleAppsScript('getFilteredData', {
+            ssId: this.state.sourceSpreadsheet.id,
+            sheetName: this.state.sourceSheet.name,
+            fromDate,
+            toDate
+          });
+
+          this.state.previewData = response.data;
+          this.showPreviewModal();
+          this.showNotification('success', 'Data Loaded', `Successfully loaded ${response.data.rowCount} rows.`);
+
+        } catch (error) {
+          this.showNotification('error', 'Failed to Load Data', error.message);
+        } finally {
+          this.hideLoading('loadPreviewBtn');
+        }
+      }
+
+      showPreviewModal() {
+        if (!this.state.previewData) return;
+
+        document.getElementById('previewSubtitle').textContent = 
+          `${this.state.previewData.rowCount} rows found for selected date range`;
+
+        const table = document.getElementById('previewTable');
+        table.innerHTML = '';
+
+        // Create header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        this.state.previewData.headers.forEach(header => {
+          const th = document.createElement('th');
+          th.textContent = header;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create body with first 10 rows
+        const tbody = document.createElement('tbody');
+        const rowsToShow = this.state.previewData.rows.slice(0, 10);
+        
+        rowsToShow.forEach(row => {
+          const tr = document.createElement('tr');
+          row.forEach(cell => {
+            const td = document.createElement('td');
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+
+        // Add "and X more rows" if needed
+        if (this.state.previewData.rows.length > 10) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = this.state.previewData.headers.length;
+          td.textContent = `... and ${this.state.previewData.rows.length - 10} more rows`;
+          td.style.textAlign = 'center';
+          td.style.color = '#9ca3af';
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        }
+
+        table.appendChild(tbody);
+        this.showModal('previewModal');
+      }
+
+      confirmPreview() {
+        this.hideModal('previewModal');
+        document.getElementById('sourceRowsCount').textContent = this.state.previewData?.rowCount || 0;
+        this.showNotification('success', 'Data Preview Confirmed', 
+          `Ready to transfer ${this.state.previewData?.rowCount || 0} rows.`);
+        this.updateUI();
+      }
+
+      async executeTransfer() {
+        if (!this.canExecuteTransfer()) {
+          this.showNotification('error', 'Missing Information', 
+            'Please complete all required fields before transferring.');
+          return;
+        }
+
+        try {
+          // Validate headers first
+          const headerValidation = await this.callGoogleAppsScript('validateHeaders', {
+            sourceSpreadsheetId: this.state.sourceSpreadsheet.id,
+            sourceSheetName: this.state.sourceSheet.name,
+            destSpreadsheetId: this.state.destSpreadsheet.id,
+            destSheetName: this.state.destSheet.name
+          });
+
+          if (headerValidation.data) {
+            this.showHeaderValidationModal(headerValidation.data);
+            return;
+          }
+
+          // Show confirmation dialog
+          this.showConfirmationModal();
+
+        } catch (error) {
+          this.showNotification('error', 'Header Validation Failed', error.message);
+        }
+      }
+
+      showConfirmationModal() {
+        const rowCount = this.state.previewData?.rowCount || 0;
+        document.getElementById('confirmationText').innerHTML = 
+          `Are you sure you want to proceed with this data transfer? This action will transfer <strong>${rowCount}</strong> rows from the source to destination.`;
+
+        const warningBox = document.getElementById('moveWarning');
+        if (this.state.transferMode === 'move') {
+          warningBox.classList.remove('hidden');
+        } else {
+          warningBox.classList.add('hidden');
+        }
+
+        this.showModal('confirmationModal');
+      }
+
+      async confirmTransfer() {
+        this.hideModal('confirmationModal');
+        
+        try {
+          this.state.isTransferring = true;
+          this.showProgressModal();
+
+          const fromDate = document.getElementById('fromDate').value;
+          const toDate = document.getElementById('toDate').value;
+
+          const response = await this.callGoogleAppsScript('executeDataTransfer', {
+            transferParams: {
+              sourceSpreadsheetId: this.state.sourceSpreadsheet.id,
+              sourceSheetName: this.state.sourceSheet.name,
+              destSpreadsheetId: this.state.destSpreadsheet.id,
+              destSheetName: this.state.destSheet.name,
+              fromDate,
+              toDate,
+              mode: this.state.transferMode
+            }
+          });
+
+          this.hideModal('progressModal');
+
+          if (response.data.success) {
+            document.getElementById('transferredRowsCount').textContent = response.data.transferredRows;
+            document.getElementById('duplicatesCount').textContent = response.data.duplicatesFound;
+            
+            this.showNotification('success', 'Transfer Complete', response.data.message);
+          } else {
+            this.showNotification('error', 'Transfer Failed', response.data.message);
+          }
+
+        } catch (error) {
+          this.hideModal('progressModal');
+          this.showNotification('error', 'Transfer Failed', error.message);
+        } finally {
+          this.state.isTransferring = false;
+        }
+      }
+
+      showProgressModal() {
+        // Simulate progress updates
+        let progress = 0;
+        const progressFill = document.getElementById('progressFill');
+        const progressMessage = document.getElementById('progressMessage');
+        const progressDetails = document.getElementById('progressDetails');
+        const progressProcessed = document.getElementById('progressProcessed');
+        const progressDuplicates = document.getElementById('progressDuplicates');
+
+        const messages = [
+          'Validating data...',
+          'Processing chunks...',
+          'Transferring data...',
+          'Finalizing transfer...'
+        ];
+
+        let messageIndex = 0;
+        let processed = 0;
+        const total = this.state.previewData?.rowCount || 0;
+        let duplicates = 0;
+
+        this.showModal('progressModal');
+
+        const updateProgress = () => {
+          if (progress < 100 && this.state.isTransferring) {
+            progress += Math.random() * 15;
+            progress = Math.min(progress, 95);
+            
+            processed = Math.floor((progress / 100) * total);
+            duplicates = Math.floor(Math.random() * 3);
+
+            progressFill.style.width = `${progress}%`;
+            progressMessage.textContent = messages[messageIndex];
+            progressDetails.textContent = `Chunk ${Math.floor(progress / 25) + 1} of 4`;
+            progressProcessed.textContent = `${processed} / ${total} rows`;
+            progressDuplicates.textContent = duplicates.toString();
+
+            if (progress > (messageIndex + 1) * 25) {
+              messageIndex = Math.min(messageIndex + 1, messages.length - 1);
+            }
+
+            setTimeout(updateProgress, 500);
+          }
+        };
+
+        updateProgress();
+      }
+
+      showHeaderValidationModal(mismatch) {
+        const content = document.getElementById('headerValidationContent');
+        content.innerHTML = '';
+
+        // Expected headers
+        const expectedDiv = document.createElement('div');
+        expectedDiv.innerHTML = `
+          <h4 style="color: #34d399; font-size: 0.875rem; margin-bottom: 12px;">Expected Headers:</h4>
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+            <div class="header-tags">
+              ${mismatch.expected.map(header => 
+                `<span class="header-tag expected">${header}</span>`
+              ).join('')}
+            </div>
+          </div>
+        `;
+        content.appendChild(expectedDiv);
+
+        // Missing headers
+        if (mismatch.missing && mismatch.missing.length > 0) {
+          const missingDiv = document.createElement('div');
+          missingDiv.style.marginTop = '16px';
+          missingDiv.innerHTML = `
+            <h4 style="color: #f87171; font-size: 0.875rem; margin-bottom: 12px;">Missing Headers:</h4>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+              <div class="header-tags">
+                ${mismatch.missing.map(header => 
+                  `<span class="header-tag missing">${header}</span>`
+                ).join('')}
+              </div>
+            </div>
+          `;
+          content.appendChild(missingDiv);
+        }
+
+        // Extra headers
+        if (mismatch.extra && mismatch.extra.length > 0) {
+          const extraDiv = document.createElement('div');
+          extraDiv.style.marginTop = '16px';
+          extraDiv.innerHTML = `
+            <h4 style="color: #fbbf24; font-size: 0.875rem; margin-bottom: 12px;">Extra Headers:</h4>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+              <div class="header-tags">
+                ${mismatch.extra.map(header => 
+                  `<span class="header-tag extra">${header}</span>`
+                ).join('')}
+              </div>
+            </div>
+          `;
+          content.appendChild(extraDiv);
+        }
+
+        this.showModal('headerValidationModal');
+      }
+
+      fixHeaders() {
+        this.hideModal('headerValidationModal');
+        this.showNotification('info', 'Header Fix Required', 
+          'Please ensure both sheets have matching headers before proceeding.');
+      }
+
+      showCreateSpreadsheetModal() {
+        document.getElementById('spreadsheetNameInput').value = '';
+        document.getElementById('initialSheetNameInput').value = '';
+        this.showModal('createSpreadsheetModal');
+      }
+
+      async createSpreadsheet() {
+        const name = document.getElementById('spreadsheetNameInput').value.trim();
+        const sheetName = document.getElementById('initialSheetNameInput').value.trim();
+
+        if (!name || !sheetName) {
+          this.showNotification('error', 'Missing Information', 
+            'Please enter both spreadsheet and sheet names.');
+          return;
+        }
+
+        try {
+          this.showLoading('createSpreadsheetConfirmBtn');
+          
+          const response = await this.callGoogleAppsScript('createNewSpreadsheet', {
+            ssName: name,
+            sheetName: sheetName
+          });
+
+          this.hideModal('createSpreadsheetModal');
+          this.showNotification('success', 'Spreadsheet Created', 
+            `Successfully created "${name}".`);
+
+          // Refresh spreadsheets list
+          await this.loadSpreadsheets();
+
+        } catch (error) {
+          this.showNotification('error', 'Failed to Create Spreadsheet', error.message);
+        } finally {
+          this.hideLoading('createSpreadsheetConfirmBtn');
+        }
+      }
+
+      showCreateSheetModal() {
+        if (!this.state.destSpreadsheet) {
+          this.showNotification('error', 'No Spreadsheet Selected', 
+            'Please select a destination spreadsheet first.');
+          return;
+        }
+
+        document.getElementById('sheetNameInput').value = '';
+        this.showModal('createSheetModal');
+      }
+
+      async createSheet() {
+        const sheetName = document.getElementById('sheetNameInput').value.trim();
+
+        if (!sheetName) {
+          this.showNotification('error', 'Missing Information', 'Please enter a sheet name.');
+          return;
+        }
+
+        if (!this.state.destSpreadsheet) {
+          this.showNotification('error', 'No Spreadsheet Selected', 
+            'Please select a spreadsheet first.');
+          return;
+        }
+
+        try {
+          this.showLoading('createSheetConfirmBtn');
+          
+          const response = await this.callGoogleAppsScript('createNewSheet', {
+            ssId: this.state.destSpreadsheet.id,
+            sheetName: sheetName
+          });
+
+          this.hideModal('createSheetModal');
+          this.showNotification('success', 'Sheet Created', `Successfully created "${sheetName}".`);
+
+          // Refresh sheets list
+          await this.loadDestSheets();
+
+        } catch (error) {
+          this.showNotification('error', 'Failed to Create Sheet', error.message);
+        } finally {
+          this.hideLoading('createSheetConfirmBtn');
+        }
+      }
+
+      toggleTransferMode() {
+        this.state.transferMode = this.state.transferMode === 'copy' ? 'move' : 'copy';
+        
+        const switchEl = document.getElementById('modeSwitch');
+        const copyLabel = document.getElementById('copyLabel');
+        const moveLabel = document.getElementById('moveLabel');
+
+        if (this.state.transferMode === 'move') {
+          switchEl.classList.add('active');
+          copyLabel.classList.remove('active');
+          copyLabel.classList.add('inactive');
+          moveLabel.classList.remove('inactive');
+          moveLabel.classList.add('active');
+        } else {
+          switchEl.classList.remove('active');
+          copyLabel.classList.remove('inactive');
+          copyLabel.classList.add('active');
+          moveLabel.classList.remove('active');
+          moveLabel.classList.add('inactive');
+        }
+      }
+
+      canExecuteTransfer() {
+        return !!(
+          this.state.sourceSpreadsheet && 
+          this.state.sourceSheet && 
+          this.state.destSpreadsheet && 
+          this.state.destSheet && 
+          this.state.previewData
+        );
+      }
+
+      updateUI() {
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+        
+        // Update load preview button
+        const loadPreviewBtn = document.getElementById('loadPreviewBtn');
+        loadPreviewBtn.disabled = !(
+          this.state.sourceSpreadsheet && 
+          this.state.sourceSheet && 
+          fromDate && 
+          toDate
+        );
+
+        // Update execute transfer button
+        const executeTransferBtn = document.getElementById('executeTransferBtn');
+        executeTransferBtn.disabled = !this.canExecuteTransfer();
+
+        // Update create sheet button
+        const createSheetBtn = document.getElementById('createSheetBtn');
+        createSheetBtn.disabled = !this.state.destSpreadsheet;
+      }
+
+      async callGoogleAppsScript(action, params = {}) {
+        // In a real Google Apps Script environment, this would call:
+        // google.script.run.withSuccessHandler(callback).withFailureHandler(errorCallback).doPost(data)
+        
+        // For this demo, we'll simulate the calls with mock data
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            try {
+              const result = this.simulateGASCall(action, params);
+              resolve({ success: true, data: result });
+            } catch (error) {
+              reject(error);
+            }
+          }, 500);
+        });
+      }
+
+      simulateGASCall(action, params) {
+        switch (action) {
+          case 'getSpreadsheets':
+            return [
+              { id: 'ss1', name: 'Orders Database' },
+              { id: 'ss2', name: 'Customer Data' },
+              { id: 'ss3', name: 'Product Inventory' },
+              { id: 'ss4', name: 'Financial Reports' },
+              { id: 'ss5', name: 'Marketing Analytics' }
+            ];
+
+          case 'getSheets':
+            const sheetMaps = {
+              'ss1': [
+                { id: 'sh1', name: 'January Orders', spreadsheetId: params.ssId },
+                { id: 'sh2', name: 'February Orders', spreadsheetId: params.ssId },
+                { id: 'sh3', name: 'March Orders', spreadsheetId: params.ssId }
+              ],
+              'ss2': [
+                { id: 'sh4', name: 'Customer Info', spreadsheetId: params.ssId },
+                { id: 'sh5', name: 'Customer Preferences', spreadsheetId: params.ssId }
+              ],
+              'ss3': [
+                { id: 'sh6', name: 'Current Inventory', spreadsheetId: params.ssId },
+                { id: 'sh7', name: 'Reorder Alerts', spreadsheetId: params.ssId }
+              ]
+            };
+            return sheetMaps[params.ssId] || [];
+
+          case 'getFilteredData':
+            const headers = ['ORDER ID', 'TRACKING ID', 'DATE', 'CUSTOMER', 'AMOUNT', 'STATUS'];
+            const rows = [];
+            const rowCount = Math.floor(Math.random() * 200) + 50;
+            
+            for (let i = 0; i < Math.min(rowCount, 100); i++) {
+              rows.push([
+                `ORD-${String(i + 1).padStart(3, '0')}`,
+                `TRK-${12345 + i}`,
+                `2024-01-${String((i % 28) + 1).padStart(2, '0')}`,
+                `Customer ${i + 1}`,
+                `$${(Math.random() * 500 + 50).toFixed(2)}`,
+                Math.random() > 0.5 ? 'Delivered' : 'Shipped'
+              ]);
+            }
+            
+            return { headers, rows, rowCount };
+
+          case 'validateHeaders':
+            // Sometimes return mismatch for demo
+            if (Math.random() > 0.7) {
+              return {
+                expected: ['ORDER ID', 'TRACKING ID', 'DATE', 'CUSTOMER', 'AMOUNT', 'STATUS'],
+                missing: ['CUSTOMER'],
+                extra: ['NOTES']
+              };
+            }
+            return null;
+
+          case 'executeDataTransfer':
+            const transferredRows = Math.floor(Math.random() * 150) + 50;
+            const duplicatesFound = Math.floor(Math.random() * 10);
+            const mode = params.transferParams.mode;
+            
+            return {
+              success: true,
+              transferredRows,
+              duplicatesFound,
+              message: `Successfully ${mode === 'move' ? 'moved' : 'copied'} ${transferredRows} rows. ${duplicatesFound} duplicates were skipped.`
+            };
+
+          case 'createNewSpreadsheet':
+            return {
+              id: `ss_${Date.now()}`,
+              name: params.ssName
+            };
+
+          case 'createNewSheet':
+            return {
+              id: `sh_${Date.now()}`,
+              name: params.sheetName,
+              spreadsheetId: params.ssId
+            };
+
+          default:
+            throw new Error(`Unknown action: ${action}`);
+        }
+      }
+
+      showModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+      }
+
+      hideModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+      }
+
+      showLoading(elementId) {
+        const element = document.getElementById(elementId);
+        const originalContent = element.innerHTML;
+        element.dataset.originalContent = originalContent;
+        element.innerHTML = '<div class="loading-spinner"></div>';
+        element.disabled = true;
+      }
+
+      hideLoading(elementId) {
+        const element = document.getElementById(elementId);
+        if (element.dataset.originalContent) {
+          element.innerHTML = element.dataset.originalContent;
+          delete element.dataset.originalContent;
+        }
+        element.disabled = false;
+      }
+
+      showNotification(type, title, message) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        
+        const icon = type === 'success' ? 'fa-check-circle' :
+                    type === 'error' ? 'fa-times-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    'fa-info-circle';
+
+        notification.innerHTML = `
+          <div class="notification-header">
+            <div style="display: flex; align-items: center;">
+              <i class="fas ${icon}" style="margin-right: 8px;"></i>
+              <span class="notification-title">${title}</span>
+            </div>
+            <button class="notification-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="notification-message">${message}</div>
+        `;
+
+        document.body.appendChild(notification);
+
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', () => {
+          notification.remove();
+        });
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            notification.remove();
+          }
+        }, 5000);
+      }
+    }
+
+    // Initialize the application
+    window.addEventListener('DOMContentLoaded', () => {
+      new SpreadsheetTransferApp();
+    });
+  </script>
+</body>
+</html>
