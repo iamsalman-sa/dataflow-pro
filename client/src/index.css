@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(230, 35%, 7%);
+  --foreground: hsl(0, 0%, 100%);
+  --card: hsla(0, 0%, 100%, 0.1);
+  --card-foreground: hsl(0, 0%, 100%);
+  --popover: hsl(230, 35%, 7%);
+  --popover-foreground: hsl(0, 0%, 100%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsla(0, 0%, 100%, 0.1);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsla(0, 0%, 100%, 0.05);
+  --muted-foreground: hsl(0, 0%, 70%);
+  --accent: hsl(217, 91%, 60%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 85%, 60%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsla(0, 0%, 100%, 0.1);
+  --input: hsla(0, 0%, 100%, 0.1);
+  --ring: hsl(262, 83%, 58%);
+  --chart-1: hsl(262, 83%, 58%);
+  --chart-2: hsl(217, 91%, 60%);
+  --chart-3: hsl(159, 100%, 36%);
+  --chart-4: hsl(42, 93%, 56%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsla(0, 0%, 100%, 0.1);
+  --sidebar-foreground: hsl(0, 0%, 100%);
+  --sidebar-primary: hsl(262, 83%, 58%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsla(0, 0%, 100%, 0.1);
+  --sidebar-accent-foreground: hsl(217, 91%, 60%);
+  --sidebar-border: hsla(0, 0%, 100%, 0.1);
+  --sidebar-ring: hsl(262, 83%, 58%);
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00), 0px 1px 2px -1px hsl(262, 83%, 58%, 0.00);
+  --shadow: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00), 0px 1px 2px -1px hsl(262, 83%, 58%, 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00), 0px 2px 4px -1px hsl(262, 83%, 58%, 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00), 0px 4px 6px -1px hsl(262, 83%, 58%, 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00), 0px 8px 10px -1px hsl(262, 83%, 58%, 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(262, 83%, 58%, 0.00);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background: linear-gradient(135deg, #0a0a2a 0%, #1e293b 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-modal {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+  }
+
+  .gradient-button {
+    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+    transition: all 0.3s ease;
+  }
+
+  .gradient-button:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+  }
+
+  .gradient-button-green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: all 0.3s ease;
+  }
+
+  .gradient-button-green:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+  }
+
+  .loading-spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  .progress-bar {
+    transition: width 0.3s ease-in-out;
+  }
+
+  .notification {
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .modal-enter {
+    animation: modalEnter 0.3s ease-out;
+  }
+
+  .toggle-switch {
+    transition: background-color 0.3s ease;
+  }
+
+  .toggle-switch:checked {
+    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
