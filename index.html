@@ -1661,23 +1661,68 @@
 
       async callGoogleAppsScript(action, params = {}) {
         return new Promise((resolve, reject) => {
-          const requestData = {
-            action: action,
-            ...params
+          const successHandler = (response) => {
+            resolve({ success: true, data: response });
           };
 
-          google.script.run
-            .withSuccessHandler((response) => {
-              if (response.success) {
-                resolve({ success: true, data: response.data });
-              } else {
-                reject(new Error(response.error || 'Unknown error occurred'));
-              }
-            })
-            .withFailureHandler((error) => {
-              reject(new Error(error.message || 'Failed to execute Google Apps Script function'));
-            })
-            .doPost(requestData);
+          const failureHandler = (error) => {
+            reject(new Error(error.message || 'Failed to execute Google Apps Script function'));
+          };
+
+          // Call the specific GAS function based on action
+          switch (action) {
+            case 'getSpreadsheets':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .getSpreadsheets();
+              break;
+
+            case 'getSheets':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .getSheets(params.ssId);
+              break;
+
+            case 'getFilteredData':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .getFilteredData(params.ssId, params.sheetName, params.fromDate, params.toDate);
+              break;
+
+            case 'validateHeaders':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .validateHeaders(params.sourceSpreadsheetId, params.sourceSheetName, params.destSpreadsheetId, params.destSheetName);
+              break;
+
+            case 'executeDataTransfer':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .executeDataTransfer(params.transferParams);
+              break;
+
+            case 'createNewSpreadsheet':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .createNewSpreadsheet(params.ssName, params.sheetName);
+              break;
+
+            case 'createNewSheet':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .createNewSheet(params.ssId, params.sheetName);
+              break;
+
+            default:
+              reject(new Error(`Unknown action: ${action}`));
+          }
         });
       }
 
