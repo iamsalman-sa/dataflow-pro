@@ -166,14 +166,15 @@ function createNewSheet(ssId, sheetName) {
 }
 
 /**
- * Get filtered data from a sheet based on date range
+ * Get filtered data from a sheet based on date range and optional status
  * @param {string} ssId - Spreadsheet ID
  * @param {string} sheetName - Sheet name
  * @param {string} fromDate - Start date (YYYY-MM-DD)
  * @param {string} toDate - End date (YYYY-MM-DD)
+ * @param {string} status - Optional status filter
  * @return {Object} Filtered data with headers, rows, and row count
  */
-function getFilteredData(ssId, sheetName, fromDate, toDate) {
+function getFilteredData(ssId, sheetName, fromDate, toDate, status) {
   try {
     if (!ssId || !sheetName || !fromDate || !toDate) {
       throw new Error('All parameters are required for data filtering');
@@ -211,16 +212,30 @@ function getFilteredData(ssId, sheetName, fromDate, toDate) {
       throw new Error('Date column not found. Please ensure your sheet has a DATE column.');
     }
     
-    // Filter data by date range
+    // Find status column index
+    const statusColIndex = headers.findIndex(header => 
+      header.toString().toLowerCase().includes('status')
+    );
+    
+    // Filter data by date range and status
     const fromDateObj = new Date(fromDate);
     const toDateObj = new Date(toDate);
     
     const filteredRows = dataRows.filter(row => {
       const cellDate = new Date(row[dateColIndex]);
-      return cellDate >= fromDateObj && cellDate <= toDateObj;
+      const dateMatch = cellDate >= fromDateObj && cellDate <= toDateObj;
+      
+      // If status is provided and status column exists, filter by status too
+      if (status && statusColIndex !== -1) {
+        const rowStatus = row[statusColIndex].toString().trim();
+        const statusMatch = rowStatus.toLowerCase() === status.toLowerCase();
+        return dateMatch && statusMatch;
+      }
+      
+      return dateMatch;
     });
     
-    console.log(`Filtered ${filteredRows.length} rows from ${dataRows.length} total rows`);
+    console.log(`Filtered ${filteredRows.length} rows from ${dataRows.length} total rows (Status: ${status || 'All'})`);
     
     return {
       headers: headers,
@@ -440,13 +455,14 @@ function executeDataTransfer(transferParams) {
       destSheetName,
       fromDate,
       toDate,
+      status,
       mode = 'copy'
     } = transferParams;
     
-    console.log(`Starting ${mode} operation from ${sourceSheetName} to ${destSheetName}`);
+    console.log(`Starting ${mode} operation from ${sourceSheetName} to ${destSheetName} (Status: ${status || 'All'})`);
     
     // Step 1: Get filtered source data
-    const sourceData = getFilteredData(sourceSpreadsheetId, sourceSheetName, fromDate, toDate);
+    const sourceData = getFilteredData(sourceSpreadsheetId, sourceSheetName, fromDate, toDate, status);
     
     if (sourceData.rowCount === 0) {
       return {
