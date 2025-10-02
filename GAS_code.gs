@@ -250,6 +250,67 @@ function getFilteredData(ssId, sheetName, fromDate, toDate, status) {
 }
 
 /**
+ * Get unique status values from a sheet's STATUS column
+ * @param {string} ssId - Spreadsheet ID
+ * @param {string} sheetName - Sheet name
+ * @return {Array} Array of unique status values
+ */
+function getUniqueStatuses(ssId, sheetName) {
+  try {
+    if (!ssId || !sheetName) {
+      throw new Error('Spreadsheet ID and sheet name are required');
+    }
+    
+    const spreadsheet = SpreadsheetApp.openById(ssId);
+    const sheet = spreadsheet.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      throw new Error(`Sheet "${sheetName}" not found in spreadsheet`);
+    }
+    
+    const lastRow = sheet.getLastRow();
+    
+    if (lastRow < 2) {
+      return []; // No data rows
+    }
+    
+    // Get all data
+    const allData = sheet.getRange(1, 1, lastRow, sheet.getLastColumn()).getValues();
+    const headers = allData[0];
+    const dataRows = allData.slice(1);
+    
+    // Find status column index
+    const statusColIndex = headers.findIndex(header => 
+      header.toString().toLowerCase().includes('status')
+    );
+    
+    if (statusColIndex === -1) {
+      console.log('Status column not found in sheet');
+      return []; // Status column not found
+    }
+    
+    // Extract unique status values
+    const statusSet = new Set();
+    dataRows.forEach(row => {
+      const status = row[statusColIndex];
+      if (status && status.toString().trim() !== '') {
+        statusSet.add(status.toString().trim());
+      }
+    });
+    
+    // Convert to array and sort
+    const uniqueStatuses = Array.from(statusSet).sort();
+    
+    console.log(`Found ${uniqueStatuses.length} unique status values: ${uniqueStatuses.join(', ')}`);
+    
+    return uniqueStatuses;
+  } catch (error) {
+    console.error('Error getting unique statuses:', error);
+    throw new Error('Failed to get unique statuses: ' + error.message);
+  }
+}
+
+/**
  * Validate headers between source and destination sheets
  * @param {string} sourceSpreadsheetId - Source spreadsheet ID
  * @param {string} sourceSheetName - Source sheet name

@@ -749,13 +749,8 @@
 
         <div class="form-group">
           <label class="form-label">Status (Optional)</label>
-          <select id="statusFilter" class="form-input">
+          <select id="statusFilter" class="form-input" disabled>
             <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Returned">Returned</option>
-            <option value="Cancelled">Cancelled</option>
           </select>
         </div>
 
@@ -1203,9 +1198,13 @@
         this.updateUI();
       }
 
-      selectSourceSheet(sheet) {
+      async selectSourceSheet(sheet) {
         this.state.sourceSheet = sheet;
         document.getElementById('sourceSheetTrigger').querySelector('span').textContent = sheet.name;
+        
+        // Load unique statuses from the selected sheet
+        await this.loadUniqueStatuses();
+        
         this.updateUI();
       }
 
@@ -1256,6 +1255,43 @@
           this.showNotification('error', 'Failed to load sheets', error.message);
         } finally {
           this.hideLoading('destSheetTrigger');
+        }
+      }
+
+      async loadUniqueStatuses() {
+        if (!this.state.sourceSpreadsheet || !this.state.sourceSheet) return;
+
+        try {
+          const statusFilter = document.getElementById('statusFilter');
+          statusFilter.disabled = true;
+          
+          const response = await this.callGoogleAppsScript('getUniqueStatuses', {
+            ssId: this.state.sourceSpreadsheet.id,
+            sheetName: this.state.sourceSheet.name
+          });
+          
+          const statuses = response.data || [];
+          
+          // Clear existing options
+          statusFilter.innerHTML = '<option value="">All Statuses</option>';
+          
+          // Add fetched statuses
+          statuses.forEach(status => {
+            const option = document.createElement('option');
+            option.value = status;
+            option.textContent = status;
+            statusFilter.appendChild(option);
+          });
+          
+          // Enable dropdown
+          statusFilter.disabled = false;
+
+        } catch (error) {
+          console.error('Failed to load statuses:', error);
+          // Keep dropdown with just "All Statuses" option if loading fails
+          const statusFilter = document.getElementById('statusFilter');
+          statusFilter.innerHTML = '<option value="">All Statuses</option>';
+          statusFilter.disabled = false;
         }
       }
 
@@ -1707,6 +1743,13 @@
                 .withSuccessHandler(successHandler)
                 .withFailureHandler(failureHandler)
                 .getSheets(params.ssId);
+              break;
+
+            case 'getUniqueStatuses':
+              google.script.run
+                .withSuccessHandler(successHandler)
+                .withFailureHandler(failureHandler)
+                .getUniqueStatuses(params.ssId, params.sheetName);
               break;
 
             case 'getFilteredData':
