@@ -1,15 +1,3 @@
-/**
- * Google Apps Script functions for Spreadsheet Data Transfer Tool
- * Deploy this as a Google Apps Script project
- * 
- * DEPLOYMENT INSTRUCTIONS:
- * 1. Go to script.google.com
- * 2. Create new project
- * 3. Replace default Code.gs content with this file
- * 4. Add HTML file named exactly 'index' (not index.html)
- * 5. Deploy as web app with execute permissions "Anyone"
- */
-
 // Configuration
 const REQUIRED_HEADERS = [
   'DATE',
@@ -212,9 +200,9 @@ function getFilteredData(ssId, sheetName, fromDate, toDate, status) {
       throw new Error('Date column not found. Please ensure your sheet has a DATE column.');
     }
     
-    // Find status column index
+    // Find status column index - exact match for "STATUS" only
     const statusColIndex = headers.findIndex(header => 
-      header.toString().toLowerCase().includes('status')
+      header.toString().trim().toUpperCase() === 'STATUS'
     );
     
     // Filter data by date range and status
@@ -279,9 +267,9 @@ function getUniqueStatuses(ssId, sheetName) {
     const headers = allData[0];
     const dataRows = allData.slice(1);
     
-    // Find status column index
+    // Find status column index - exact match for "STATUS" only
     const statusColIndex = headers.findIndex(header => 
-      header.toString().toLowerCase().includes('status')
+      header.toString().trim().toUpperCase() === 'STATUS'
     );
     
     if (statusColIndex === -1) {
