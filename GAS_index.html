@@ -852,13 +852,10 @@
           </div>
         </div>
 
-        <button class="button button-success button-full" id="executeTransferBtn" disabled title="Load & Preview data first">
+        <button class="button button-success button-full" id="executeTransferBtn" disabled>
           <i class="fas fa-bolt"></i>
-          <span id="executeTransferBtnText">Execute Transfer</span>
+          Execute Transfer
         </button>
-        <div id="previewRequiredHint" style="text-align: center; color: #9ca3af; font-size: 0.75rem; margin-top: 8px; display: none;">
-          <i class="fas fa-info-circle"></i> Click "Load & Preview" first to enable transfer
-        </div>
       </div>
     </div>
 
@@ -1441,9 +1438,12 @@
       }
 
       showConfirmationModal() {
-        const rowCount = this.state.previewData?.rowCount || 0;
-        document.getElementById('confirmationText').innerHTML = 
-          `Are you sure you want to proceed with this data transfer? This action will transfer <strong>${rowCount}</strong> rows from the source to destination.`;
+        const rowCount = this.state.previewData?.rowCount;
+        const confirmText = rowCount 
+          ? `Are you sure you want to proceed with this data transfer? This action will transfer <strong>${rowCount}</strong> rows from the source to destination.`
+          : `Are you sure you want to proceed with this data transfer? Data matching your selected filters will be transferred from the source to destination.`;
+        
+        document.getElementById('confirmationText').innerHTML = confirmText;
 
         const warningBox = document.getElementById('moveWarning');
         if (this.state.transferMode === 'move') {
@@ -1718,8 +1718,7 @@
           this.state.sourceSpreadsheet && 
           this.state.sourceSheet && 
           this.state.destSpreadsheet && 
-          this.state.destSheet && 
-          this.state.previewData
+          this.state.destSheet
         );
       }
 
@@ -1738,18 +1737,7 @@
 
         // Update execute transfer button
         const executeTransferBtn = document.getElementById('executeTransferBtn');
-        const canTransfer = this.canExecuteTransfer();
-        executeTransferBtn.disabled = !canTransfer;
-        
-        // Show hint if all fields are filled but preview not loaded
-        const previewRequiredHint = document.getElementById('previewRequiredHint');
-        const allFieldsFilled = this.state.sourceSpreadsheet && this.state.sourceSheet && 
-                                this.state.destSpreadsheet && this.state.destSheet;
-        if (allFieldsFilled && !this.state.previewData) {
-          previewRequiredHint.style.display = 'block';
-        } else {
-          previewRequiredHint.style.display = 'none';
-        }
+        executeTransferBtn.disabled = !this.canExecuteTransfer();
 
         // Update create sheet button
         const createSheetBtn = document.getElementById('createSheetBtn');
